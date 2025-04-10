@@ -1,0 +1,38 @@
+
+networks:
+  ai-network:
+    driver: bridge
+
+volumes:
+  redis_data:
+  redisinsight_data:
+services:
+  redis:
+    image: redis/redis-stack-server:latest
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    environment:
+      # Sets password using variable loaded from.env file
+      - REDIS_ARGS=--requirepass ${REDIS_PASSWORD}
+      - TZ=${TIMEZONE}
+    volumes:
+      - redis_data:/data
+    networks:
+      - ai-network
+
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: redis-insight
+    restart: unless-stopped
+    ports:
+      - "5540:5540"
+    environment:
+     - TZ=${TIMEZONE}
+    volumes:
+      - redisinsight_data:/data
+    networks:
+      - ai-network
+    depends_on:
+      - redis
